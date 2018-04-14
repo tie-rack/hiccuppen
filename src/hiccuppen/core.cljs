@@ -7,21 +7,45 @@
             [reagent.core :as reagent :refer [atom]]
             [hiccups.runtime :as hiccups]))
 
-(defonce app-state (atom {:hiccup (str [:div "Hello " [:em "Christine"] "!"])}))
+(defonce app-state (atom {:hiccup (str [:div "Hello " [:em.green "Christine"] "!"])
+                          :css "/* styling */\n\n.green { color: green; }"}))
 
-(defn update-hiccup [e]
-  (swap! app-state assoc :hiccup (-> e .-target .-value)))
+(defn update-app-from-textarea [k]
+  (fn [e]
+    (swap! app-state assoc k (-> e .-target .-value))))
+
+(defn iframe-hiccup [styles body]
+  [:html
+   [:head
+    [:style styles]]
+   [:body
+    body]])
+
+(defn update-iframe [_ _ _ new-state]
+  (let [{:keys [hiccup css]} new-state
+        hiccup-data (reader/read-string hiccup)
+        hiccup-html (hiccups/render-html (iframe-hiccup css hiccup-data))
+        iframe (.getElementById js/document "hiccup-frame")]
+    (set! (.-srcdoc iframe) hiccup-html)))
 
 (defn hello-world []
-  (let [hiccup-str (:hiccup @app-state)
-        hiccup (reader/read-string hiccup-str)
-        hiccup-html (hiccups/render-html hiccup)]
-    [:div
-     [:div.container
-      [:textarea.hiccup {:value hiccup-str
-                         :on-change update-hiccup}]]
-     [:div.container.bordered hiccup-html]
-     [:div.container.bordered {:dangerouslySetInnerHTML {:__html hiccup-html}}]]))
+  (reagent/create-class
+   {:component-did-mount #(update-iframe nil nil nil @app-state)
+    :reagent-render
+    (fn []
+      (let [{:keys [hiccup css]} @app-state
+            hiccup-data (reader/read-string hiccup)
+            hiccup-html (hiccups/render-html hiccup-data)]
+        [:div
+         [:div.container
+          [:textarea.edit-box {:value hiccup
+                               :on-change (update-app-from-textarea :hiccup)}]
+          [:textarea.edit-box {:value css
+                               :on-change (update-app-from-textarea :css)}]]
+         [:div.container.bordered hiccup-html]
+         [:iframe#hiccup-frame.container.bordered]]))}))
+
+(add-watch app-state :update-iframe update-iframe)
 
 (reagent/render-component [hello-world]
                           (. js/document (getElementById "app")))
