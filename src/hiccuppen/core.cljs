@@ -7,8 +7,13 @@
             [reagent.core :as reagent :refer [atom]]
             [hiccups.runtime :as hiccups]))
 
-(defonce app-state (atom {:hiccup (str [:div "Hello " [:em.green "Christine"] "!"])
-                          :css "/* styling */\n\n.green { color: green; }"}))
+(defonce app-state
+  (atom {:hiccup
+         (str
+          [:div
+           [:p "Hello " [:em.green "Christine"] "!"]
+           [:p "A " [:a {:href "https://www.kilosecond.com/hiccuppen/"} "link"]]])
+         :css "/* styling */\n\n.green { color: green; }"}))
 
 (defn update-app-from-textarea [k]
   (fn [e]
@@ -17,6 +22,7 @@
 (defn iframe-hiccup [styles body]
   [:html
    [:head
+    [:base {:target "_parent"}]
     [:style styles]]
    [:body
     body]])
