@@ -15,8 +15,9 @@
          (with-out-str
            (pprint
             [:div
-             [:p "Hello " [:em.green "Christine"] "!"]
-             [:p "A " [:a {:href "https://www.kilosecond.com/hiccuppen/"} "link"]]]))
+             [:p "Hello, " [:em.green "Christine"] "!"]
+             [:p "Here's a "
+              [:a {:href "https://www.kilosecond.com/hiccuppen/"} "link"]]]))
          :css "/* styling */\n\n.green { color: green; }"}))
 
 (defn update-app-from-textarea [k]
