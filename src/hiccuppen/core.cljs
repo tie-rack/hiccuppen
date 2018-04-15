@@ -3,16 +3,20 @@
 ;; file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 (ns hiccuppen.core
-  (:require [cljs.reader :as reader]
+  (:require [cljs.pprint :as pp :refer [pprint]]
+            [cljs.reader :as reader]
             [reagent.core :as reagent :refer [atom]]
             [hiccups.runtime :as hiccups]))
 
+(set! pp/*print-right-margin* 65)
+
 (defonce app-state
   (atom {:hiccup
-         (str
-          [:div
-           [:p "Hello " [:em.green "Christine"] "!"]
-           [:p "A " [:a {:href "https://www.kilosecond.com/hiccuppen/"} "link"]]])
+         (with-out-str
+           (pprint
+            [:div
+             [:p "Hello " [:em.green "Christine"] "!"]
+             [:p "A " [:a {:href "https://www.kilosecond.com/hiccuppen/"} "link"]]]))
          :css "/* styling */\n\n.green { color: green; }"}))
 
 (defn update-app-from-textarea [k]
