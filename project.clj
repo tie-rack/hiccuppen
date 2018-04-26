@@ -23,8 +23,7 @@
               [{:id "dev"
                 :source-paths ["src"]
 
-                :figwheel {:on-jsload "hiccuppen.core/on-js-reload"
-                           :open-urls ["http://localhost:3449/index.html"]}
+                :figwheel {:open-urls ["http://localhost:3449/index.html"]}
 
                 :compiler {:main hiccuppen.core
                            :asset-path "js/compiled/out"
