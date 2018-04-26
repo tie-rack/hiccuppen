@@ -33,28 +33,42 @@
     body]])
 
 (defn update-iframe [_ _ _ new-state]
-  (let [{:keys [hiccup css]} new-state
-        hiccup-data (reader/read-string hiccup)
-        hiccup-html (hiccups/render-html (iframe-hiccup css hiccup-data))
-        iframe (.getElementById js/document "hiccup-frame")]
-    (set! (.-srcdoc iframe) hiccup-html)))
+  (try
+    (let [{:keys [hiccup css]} new-state
+          hiccup-data (reader/read-string hiccup)
+          hiccup-html (hiccups/render-html (iframe-hiccup css hiccup-data))
+          iframe (.getElementById js/document "hiccup-frame")]
+      (set! (.-srcdoc iframe) hiccup-html))
+    (catch :default _
+      nil)))
 
 (defn hello-world []
-  (reagent/create-class
-   {:component-did-mount #(update-iframe nil nil nil @app-state)
-    :reagent-render
-    (fn []
-      (let [{:keys [hiccup css]} @app-state
-            hiccup-data (reader/read-string hiccup)
-            hiccup-html (hiccups/render-html hiccup-data)]
-        [:div
-         [:div.container
-          [:textarea.edit-box {:value hiccup
-                               :on-change (update-app-from-textarea :hiccup)}]
-          [:textarea.edit-box {:value css
-                               :on-change (update-app-from-textarea :css)}]]
-         [:div.container.bordered hiccup-html]
-         [:iframe#hiccup-frame.container.bordered]]))}))
+  (fn []
+    (let [rendered-html (atom "")
+          valid-state (atom true)]
+      (reagent/create-class
+       {:component-did-mount #(update-iframe nil nil nil @app-state)
+        :reagent-render
+        (fn []
+          (let [{:keys [hiccup css]} @app-state]
+            (try
+              (let [hiccup-data (reader/read-string hiccup)
+                    hiccup-html (hiccups/render-html hiccup-data)]
+                (reset! valid-state true)
+                (reset! rendered-html hiccup-html))
+              (catch :default _
+                (reset! valid-state false)))
+            [:div
+             [:div.container
+              [:textarea.edit-box {:class (if @valid-state
+                                            [:valid]
+                                            [:invalid])
+                                   :value hiccup
+                                   :on-change (update-app-from-textarea :hiccup)}]
+              [:textarea.edit-box {:value css
+                                   :on-change (update-app-from-textarea :css)}]]
+             [:div.container.bordered @rendered-html]
+             [:iframe#hiccup-frame.container.bordered]]))}))))
 
 (add-watch app-state :update-iframe update-iframe)
 

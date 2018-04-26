@@ -15,3 +15,11 @@
   width: 40%;
   height: 200px;
 }
+
+.valid {
+  background-color: rgb(244,255,244);
+}
+
+.invalid {
+  background-color: rgb(255,244,244);
+}
